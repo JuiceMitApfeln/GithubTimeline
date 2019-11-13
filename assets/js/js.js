@@ -1,6 +1,6 @@
 class User {
   constructor(
-    _name,
+    _name = "",
     _nickname = "",
     _bio = "",
     _email = "",
@@ -122,7 +122,7 @@ class User {
     if (empty(value)) {
       this._name = value;
     } else {
-      this._name = "User doesn't exist";
+      this._name = "has no name";
     }
   }
 }
