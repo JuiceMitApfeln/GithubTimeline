@@ -226,8 +226,9 @@ function empty(obj) {
   return true;
 }
 
-function repoToHtml() {
+function userInfoToHtml() {
   let userObj = JSON.parse(this.responseText);
+  console.log(userObj);
 
   user = new User(
     userObj.name,
@@ -275,10 +276,7 @@ function repoToHtml() {
   new Text(user.blog).createText(alink);
   div2.appendChild(alink);
   bio.appendChild(div2);
-
-  console.log(user);
   document.createElement;
-  console.log(userObj);
 }
 
 function btnClicked() {
@@ -291,7 +289,7 @@ function btnClicked() {
 
 function searchUser(username) {
   let request = new XMLHttpRequest();
-  request.onload = repoToHtml;
+  request.onload = userInfoToHtml;
   request.open("get", `https://api.github.com/users/${username}`, true);
   request.send();
 }
@@ -301,6 +299,14 @@ init = () => {
 };
 
 document.getElementById("btnSearch").addEventListener("click", btnClicked);
+document
+  .getElementById("usernameInput")
+  .addEventListener("keypress", enterPress);
+function enterPress(event) {
+  if (event.keyCode == 13) {
+    btnClicked();
+  }
+}
 
 window.onload = function() {
   init();
