@@ -1,10 +1,10 @@
 class User {
   constructor(
-    _username,
+    _name,
     _nickname = "",
     _bio = "",
     _email = "",
-    _location = "World",
+    _location = "",
     _blog = "",
     _hireable = false,
     _avatar = "",
@@ -12,7 +12,7 @@ class User {
     _accountLink = "",
     _company = ""
   ) {
-    this.username = _username;
+    this.name = _name;
     this.nickname = _nickname;
     this.bio = _bio;
     this.email = _email;
@@ -25,8 +25,8 @@ class User {
     this.blog = _blog;
   }
 
-  get username() {
-    return this._username;
+  get name() {
+    return this._name;
   }
   get email() {
     return this._email;
@@ -80,7 +80,7 @@ class User {
     if (empty(value)) {
       this._nickname = value;
     } else {
-      this._nickname = "";
+      this._nickname = "User has left the building";
     }
   }
   set company(value) {
@@ -108,7 +108,7 @@ class User {
     if (empty(value)) {
       this._avatar = value;
     } else {
-      this._avatar = "";
+      this._avatar = "./assets/images/userHasLeftTheBuilding.svg";
     }
   }
   set email(value) {
@@ -118,11 +118,11 @@ class User {
       this._email = "";
     }
   }
-  set username(value) {
+  set name(value) {
     if (empty(value)) {
-      this._username = value;
+      this._name = value;
     } else {
-      this._username = "";
+      this._name = "User doesn't exist";
     }
   }
 }
@@ -219,6 +219,9 @@ function empty(obj) {
   if (obj == null) {
     return false;
   }
+  if (obj == undefined) {
+    return false;
+  }
   if (typeof obj == "string") return obj.trim() != "";
   return true;
 }
@@ -240,7 +243,7 @@ function repoToHtml() {
     userObj.company
   );
 
-  document.getElementById("username").innerHTML = user.username;
+  document.getElementById("username").innerHTML = user.name;
   document.getElementById("avatar").setAttribute("src", user.avatar);
   document.getElementById("nickname").innerHTML = user.nickname;
 
