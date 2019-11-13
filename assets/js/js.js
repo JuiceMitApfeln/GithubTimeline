@@ -12,17 +12,17 @@ class User {
     _accountLink = "",
     _company = ""
   ) {
-    this._username = _username;
-    this._nickname = _nickname;
-    this._bio = _bio;
-    this._email = _email;
-    this._hireable = _hireable;
-    this._avatar = _avatar;
-    this._publicRepos = _publicRepos;
-    this._accountLink = _accountLink;
-    this._company = _company;
-    this._location = _location;
-    this._blog = _blog;
+    this.username = _username;
+    this.nickname = _nickname;
+    this.bio = _bio;
+    this.email = _email;
+    this.hireable = _hireable;
+    this.avatar = _avatar;
+    this.publicRepos = _publicRepos;
+    this.accountLink = _accountLink;
+    this.company = _company;
+    this.location = _location;
+    this.blog = _blog;
   }
 
   get username() {
@@ -56,34 +56,74 @@ class User {
     return this._blog;
   }
   set blog(value) {
-    this._blog = value;
+    if (empty(value)) {
+      this._blog = value;
+    } else {
+      this._blog = "";
+    }
   }
   set location(value) {
-    this._location = value;
+    if (empty(value)) {
+      this._location = value;
+    } else {
+      this._location = "";
+    }
   }
   set bio(value) {
-    this._bio = value;
+    if (empty(value)) {
+      this._bio = value;
+    } else {
+      this._bio = "";
+    }
   }
   set nickname(value) {
-    this._nickname = value;
+    if (empty(value)) {
+      this._nickname = value;
+    } else {
+      this._nickname = "";
+    }
   }
   set company(value) {
-    this._company = value;
+    if (empty(value)) {
+      this._company = value;
+    } else {
+      this._company = "";
+    }
   }
   set accountLink(value) {
-    this._accountLink = value;
+    if (empty(value)) {
+      this._accountLink = value;
+    } else {
+      this._accountLink = "";
+    }
   }
   set publicRepos(value) {
-    this._publicRepos = value;
+    if (empty(value)) {
+      this._publicRepos = value;
+    } else {
+      this._publicRepos = "";
+    }
   }
   set avatar(value) {
-    this._avatar = value;
+    if (empty(value)) {
+      this._avatar = value;
+    } else {
+      this._avatar = "";
+    }
   }
   set email(value) {
-    this._email = value;
+    if (empty(value)) {
+      this._email = value;
+    } else {
+      this._email = "";
+    }
   }
   set username(value) {
-    this._username = value;
+    if (empty(value)) {
+      this._username = value;
+    } else {
+      this._username = "";
+    }
   }
 }
 
@@ -173,6 +213,14 @@ class Text {
     const textElem = document.createTextNode(this.text);
     append.appendChild(textElem);
   }
+}
+
+function empty(obj) {
+  if (obj == null) {
+    return false;
+  }
+  if (typeof obj == "string") return obj.trim() != "";
+  return true;
 }
 
 function repoToHtml() {
