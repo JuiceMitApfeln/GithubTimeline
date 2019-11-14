@@ -215,6 +215,10 @@ class Text {
   }
 }
 
+class Repo {
+  constructor(_name, _cloneUrl, _createdAtDate, _owner) {}
+}
+
 function empty(obj) {
   if (obj == null) {
     return false;
@@ -228,9 +232,8 @@ function empty(obj) {
 
 function userInfoToHtml() {
   let userObj = JSON.parse(this.responseText);
-  console.log(userObj);
 
-  user = new User(
+  const user = new User(
     userObj.name,
     userObj.login,
     userObj.bio,
@@ -277,6 +280,11 @@ function userInfoToHtml() {
   div2.appendChild(alink);
   bio.appendChild(div2);
   document.createElement;
+
+  if (user.publicRepos > 0) {
+    createTimeline(user.nickname);
+    // getUserEvents(user.nickname);
+  }
 }
 
 function btnClicked() {
@@ -294,9 +302,79 @@ function searchUser(username) {
   request.send();
 }
 
-init = () => {
-  console.log("");
-};
+// var iets;
+// function getUserEvents(username) {
+//   let userEvents;
+//   userEvents = new XMLHttpRequest();
+//   // userEvents.onload;
+//   userEvents.open(
+//     "get",
+//     `https://api.github.com/users/${username}/events`,
+//     true
+//   );
+//   userEvents.send();
+//   // iets = JSON.parse(userEvents.responseText);
+// }
+
+function createTimeline(username) {
+  let request = new XMLHttpRequest();
+  request.onload = reposTimelineToHtml;
+  request.open("get", `https://api.github.com/users/${username}/repos`, true);
+  request.send();
+}
+
+function reposTimelineToHtml() {
+  let reposObj = JSON.parse(this.responseText);
+  console.dir(reposObj);
+
+  const timeline = document.getElementById("timeline");
+  console.log(timeline);
+
+  timeline.innerHTML = "";
+  leftRight = ["l", "r"];
+  for (let i = 0; i < 2; i++) {
+    const liElem = document.createElement("li");
+    timeline.appendChild(liElem);
+
+    const divDir = document.createElement("li");
+    divDir.setAttribute("class", `direction-${leftRight[i % 2]}`);
+    liElem.appendChild(divDir);
+
+    //first part
+    const divFlagWrapper = document.createElement("div");
+    divFlagWrapper.setAttribute("class", "flag-wrapper");
+    divDir.appendChild(divFlagWrapper);
+
+    const spanFlag = document.createElement("span");
+    spanFlag.setAttribute("class", "flag");
+    const textspanFlag = document.createTextNode("name repo");
+    spanFlag.appendChild(textspanFlag);
+    divFlagWrapper.appendChild(spanFlag);
+
+    const spanTimeWrapper = document.createElement("span");
+    spanTimeWrapper.setAttribute("class", "time-wrapper");
+    divFlagWrapper.appendChild(spanTimeWrapper);
+
+    const spanTime = document.createElement("span");
+    spanTime.setAttribute("class", "time");
+    spanTimeWrapper.appendChild(spanTime);
+
+    const textSpanTimeWrapper = document.createTextNode("dateFrom - dateTo");
+    spanTime.appendChild(textSpanTimeWrapper);
+
+    // //second part
+    const divDesc = document.createElement("div");
+    divDesc.setAttribute("class", "desc");
+    divDir.appendChild(divDesc);
+
+    const textDesc = document.createTextNode(
+      "description of repo with some links to the repo and other stuff"
+    );
+    divDesc.appendChild(textDesc);
+  }
+}
+
+init = () => {};
 
 document.getElementById("btnSearch").addEventListener("click", btnClicked);
 document
