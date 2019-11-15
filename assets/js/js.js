@@ -289,7 +289,7 @@ function userInfoToHtml() {
     new Text(` `).createText(div2);
     const alink = document.createElement("a");
     alink.setAttribute("href", `${user.blog}`);
-    new Text(user.blog).createText(alink);
+    new Text(formatLink(user.blog)).createText(alink);
     div2.appendChild(alink);
     bio.appendChild(div2);
     document.createElement;
@@ -299,6 +299,19 @@ function userInfoToHtml() {
       // getUserEvents(user.nickname);
     }
   }
+}
+
+function formatLink(link) {
+  if (link.substring(0, 8) == "https://") {
+    return link.replace("https://", "");
+  }
+  if (link.substring(0, 3) == "www") {
+    return link.replace("www", "");
+  }
+  if (link.substring(0, 7) == "http://") {
+    return link.replace("http://", "");
+  }
+  return link;
 }
 
 function fade(element) {
