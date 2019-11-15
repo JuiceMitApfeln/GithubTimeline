@@ -441,7 +441,7 @@ function displayErrorMsg(msg, fadeInAndOut = false) {
   window.setTimeout(clearError, 3000);
 }
 
-const reposList = [];
+let reposList = [];
 function reposTimelineToHtml() {
   let reposObj = JSON.parse(this.responseText);
   if (reposObj.length >= 100) {
@@ -469,7 +469,7 @@ function reposTimelineToHtml() {
       const liElem = document.createElement("li");
       timeline.appendChild(liElem);
 
-      const divDir = document.createElement("li");
+      const divDir = document.createElement("div");
       divDir.setAttribute("class", `direction-${leftRight[i % 2]}`);
       liElem.appendChild(divDir);
 
@@ -518,6 +518,7 @@ function reposTimelineToHtml() {
       divDesc.appendChild(textDesc);
     }
   }
+  reposList = [];
 }
 
 init = () => {};
