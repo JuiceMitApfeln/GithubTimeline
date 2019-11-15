@@ -122,7 +122,7 @@ class User {
     if (empty(value)) {
       this._name = value;
     } else {
-      this._name = "has no name";
+      this._name = "";
     }
   }
 }
@@ -232,16 +232,7 @@ function empty(obj) {
 
 function userInfoToHtml() {
   if (requestSearchUser.status == 404) {
-    const divErrorContainer = document.getElementById("containerOfError");
-    divErrorContainer.innerHTML = "";
-    unfade(divErrorContainer);
-    //<div class="error" id="error">error message</div>
-    const divError = document.createElement("div");
-    divError.setAttribute("class", "error");
-    divErrorContainer.appendChild(divError);
-
-    divError.appendChild(document.createTextNode("User does not exist"));
-    window.setTimeout(clearError, 2000);
+    displayErrorMsg("User does not exist", true);
   }
   if (requestSearchUser.status != 404) {
     let userObj = JSON.parse(this.responseText);
@@ -294,8 +285,10 @@ function userInfoToHtml() {
     bio.appendChild(div2);
     document.createElement;
 
+    const timeline = document.getElementById("timeline");
+    timeline.innerHTML = "";
     if (user.publicRepos > 0) {
-      createTimeline(user.nickname);
+      getReposThanCreateTimeline(user.nickname);
       // getUserEvents(user.nickname);
     }
   }
@@ -400,68 +393,130 @@ function formatDate(date) {
   return day + " " + monthNames[monthIndex] + " " + year;
 }
 
-function createTimeline(username) {
-  request = new XMLHttpRequest();
-  request.onload = reposTimelineToHtml;
-  request.open("get", `https://api.github.com/users/${username}/repos`, true);
-  request.send();
+function getReposThanCreateTimeline(username) {
+  requestRepos = new XMLHttpRequest();
+  requestRepos.onload = reposTimelineToHtml;
+  requestRepos.open(
+    "get",
+    `https://api.github.com/users/${username}/repos?page=1&per_page=100`,
+    true
+  );
+  requestRepos.send();
 }
 
+function getContributors(repoLink) {
+  requestContributors = new XMLHttpRequest();
+  requestContributors.onload;
+  requestContributors.open("get", `${repoLink}`, true);
+  requestContributors.send();
+  // console.log(requestContributors.responseText);
+  return JSON.parse(requestContributors.responseText);
+}
+
+var pageNrRem = 2;
+function getReposThanCreateTimelineMoreThan100Repos(username, pageNr) {
+  req = new XMLHttpRequest();
+  req.onload = reposTimelineToHtml;
+  req.open(
+    "get",
+    `https://api.github.com/users/${username}/repos?page=${pageNr}&per_page=100`,
+    true
+  );
+  req.send();
+}
+
+function displayErrorMsg(msg, fadeInAndOut = false) {
+  console.log(fadeInAndOut);
+  const divErrorContainer = document.getElementById("containerOfError");
+  divErrorContainer.innerHTML = "";
+  if (fadeInAndOut) {
+    unfade(divErrorContainer);
+  }
+  const divError = document.createElement("div");
+  divError.setAttribute("class", "error");
+  divErrorContainer.appendChild(divError);
+
+  divError.appendChild(document.createTextNode(`${msg}`));
+
+  window.setTimeout(clearError, 3000);
+}
+
+const reposList = [];
 function reposTimelineToHtml() {
   let reposObj = JSON.parse(this.responseText);
-  reposObj.sort(function(a, b) {
-    a = new Date(a.created_at);
-    b = new Date(b.created_at);
-    return a > b ? -1 : a < b ? 1 : 0;
-  });
-
-  const timeline = document.getElementById("timeline");
-
-  timeline.innerHTML = "";
-  leftRight = ["r", "l"];
-  for (let i = 0; i < reposObj.length; i++) {
-    const liElem = document.createElement("li");
-    timeline.appendChild(liElem);
-
-    const divDir = document.createElement("li");
-    divDir.setAttribute("class", `direction-${leftRight[i % 2]}`);
-    liElem.appendChild(divDir);
-
-    //first part
-    const divFlagWrapper = document.createElement("div");
-    divFlagWrapper.setAttribute("class", "flag-wrapper");
-    divDir.appendChild(divFlagWrapper);
-
-    const spanFlag = document.createElement("span");
-    spanFlag.setAttribute("class", "flag");
-    const name = reposObj[i].full_name.split("/")[1];
-    const textspanFlag = document.createTextNode(`${name}`);
-    spanFlag.appendChild(textspanFlag);
-    divFlagWrapper.appendChild(spanFlag);
-
-    const spanTimeWrapper = document.createElement("span");
-    spanTimeWrapper.setAttribute("class", "time-wrapper");
-    divFlagWrapper.appendChild(spanTimeWrapper);
-
-    const spanTime = document.createElement("span");
-    spanTime.setAttribute("class", "time");
-    spanTimeWrapper.appendChild(spanTime);
-
-    const timeFrom = new Date(reposObj[i].created_at);
-    const textSpanTimeWrapper = document.createTextNode(
-      `${formatDate(timeFrom)}`
-    ); // - dateTo
-    spanTime.appendChild(textSpanTimeWrapper);
-
-    // //second part
-    const divDesc = document.createElement("div");
-    divDesc.setAttribute("class", "desc");
-    divDir.appendChild(divDesc);
-
-    const textDesc = document.createTextNode(
-      "description of repo with some links to the repo and other stuff"
+  if (reposObj.length >= 100) {
+    //error
+    displayErrorMsg("This might take a few seconds");
+    reposList.push(...reposObj);
+    getReposThanCreateTimelineMoreThan100Repos(
+      reposObj[0].owner.login,
+      pageNrRem
     );
-    divDesc.appendChild(textDesc);
+    pageNrRem++;
+  } else {
+    reposObj.push(...reposList);
+    reposObj.sort(function(a, b) {
+      a = new Date(a.created_at);
+      b = new Date(b.created_at);
+      return a > b ? -1 : a < b ? 1 : 0;
+    });
+
+    const timeline = document.getElementById("timeline");
+
+    timeline.innerHTML = "";
+    leftRight = ["r", "l"];
+    for (let i = 0; i < reposObj.length; i++) {
+      const liElem = document.createElement("li");
+      timeline.appendChild(liElem);
+
+      const divDir = document.createElement("li");
+      divDir.setAttribute("class", `direction-${leftRight[i % 2]}`);
+      liElem.appendChild(divDir);
+
+      //first part
+      const divFlagWrapper = document.createElement("div");
+      divFlagWrapper.setAttribute("class", "flag-wrapper");
+      divDir.appendChild(divFlagWrapper);
+
+      const spanFlag = document.createElement("span");
+      spanFlag.setAttribute("class", "flag");
+      const name = reposObj[i].full_name.split("/")[1];
+      const textspanFlag = document.createTextNode(`${name}`);
+      spanFlag.appendChild(textspanFlag);
+      divFlagWrapper.appendChild(spanFlag);
+
+      const spanTimeWrapper = document.createElement("span");
+      spanTimeWrapper.setAttribute("class", "time-wrapper");
+      divFlagWrapper.appendChild(spanTimeWrapper);
+
+      const spanTime = document.createElement("span");
+      spanTime.setAttribute("class", "time");
+      spanTimeWrapper.appendChild(spanTime);
+
+      const timeFrom = new Date(reposObj[i].created_at);
+      const textSpanTimeWrapper = document.createTextNode(
+        `${formatDate(timeFrom)}`
+      ); // - dateTo
+      spanTime.appendChild(textSpanTimeWrapper);
+
+      // //second part
+      const divDesc = document.createElement("div");
+      divDesc.setAttribute("class", "desc");
+      divDir.appendChild(divDesc);
+
+      const linkToRepo = document.createElement("a");
+      linkToRepo.setAttribute("href", `${reposObj[i].html_url}`);
+      const textLink = document.createTextNode(
+        `${formatLink(reposObj[i].html_url)}`
+      );
+      linkToRepo.append(textLink);
+      divDesc.append(linkToRepo);
+
+      // const lul = getContributors(reposObj[i].contributors_url);
+      // console.log(lul);
+      const textDesc = document.createTextNode(``);
+      divDesc.appendChild(textDesc);
+    }
   }
 }
 
