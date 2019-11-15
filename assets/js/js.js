@@ -231,60 +231,105 @@ function empty(obj) {
 }
 
 function userInfoToHtml() {
-  let userObj = JSON.parse(this.responseText);
+  if (request.status == 404) {
+    const divErrorContainer = document.getElementById("containerOfError");
+    divErrorContainer.innerHTML = "";
+    unfade(divErrorContainer);
+    //<div class="error" id="error">error message</div>
+    const divError = document.createElement("div");
+    divError.setAttribute("class", "error");
+    divErrorContainer.appendChild(divError);
 
-  const user = new User(
-    userObj.name,
-    userObj.login,
-    userObj.bio,
-    userObj.email,
-    userObj.location,
-    userObj.blog,
-    userObj.hireable,
-    userObj.avatar_url,
-    userObj.public_repos,
-    userObj.html_url,
-    userObj.company
-  );
-
-  document.getElementById("username").innerHTML = user.name;
-  document.getElementById("avatar").setAttribute("src", user.avatar);
-  document.getElementById("nickname").innerHTML = user.nickname;
-
-  // for bio
-  const bio = document.getElementById("bio");
-  bio.innerHTML = "";
-  new Elem("p", user.bio).createElem(bio);
-  const div1 = document.createElement("div");
-  new Elem("img", "", "", [
-    "./assets/images/location.svg",
-    "location icon",
-    32
-  ]).createElem(div1);
-  new Text(` `).createText(div1);
-  new Text(`${user.location}\n`).createText(div1);
-  bio.appendChild(div1);
-
-  bio.appendChild(document.createElement("br"));
-
-  const div2 = document.createElement("div");
-  new Elem("img", "", "", [
-    "./assets/images/link.svg",
-    "hyperlink icon",
-    32
-  ]).createElem(div2);
-  new Text(` `).createText(div2);
-  const alink = document.createElement("a");
-  alink.setAttribute("href", `${user.blog}`);
-  new Text(user.blog).createText(alink);
-  div2.appendChild(alink);
-  bio.appendChild(div2);
-  document.createElement;
-
-  if (user.publicRepos > 0) {
-    createTimeline(user.nickname);
-    // getUserEvents(user.nickname);
+    divError.appendChild(document.createTextNode("User does not exist"));
+    window.setTimeout(clearError, 2000);
   }
+  if (request.status != 404) {
+    let userObj = JSON.parse(this.responseText);
+
+    const user = new User(
+      userObj.name,
+      userObj.login,
+      userObj.bio,
+      userObj.email,
+      userObj.location,
+      userObj.blog,
+      userObj.hireable,
+      userObj.avatar_url,
+      userObj.public_repos,
+      userObj.html_url,
+      userObj.company
+    );
+
+    document.getElementById("username").innerHTML = user.name;
+    document.getElementById("avatar").setAttribute("src", user.avatar);
+    document.getElementById("nickname").innerHTML = user.nickname;
+
+    // for bio
+    const bio = document.getElementById("bio");
+    bio.innerHTML = "";
+    new Elem("p", user.bio).createElem(bio);
+    const div1 = document.createElement("div");
+    new Elem("img", "", "", [
+      "./assets/images/location.svg",
+      "location icon",
+      32
+    ]).createElem(div1);
+    new Text(` `).createText(div1);
+    new Text(`${user.location}\n`).createText(div1);
+    bio.appendChild(div1);
+
+    bio.appendChild(document.createElement("br"));
+
+    const div2 = document.createElement("div");
+    new Elem("img", "", "", [
+      "./assets/images/link.svg",
+      "hyperlink icon",
+      32
+    ]).createElem(div2);
+    new Text(` `).createText(div2);
+    const alink = document.createElement("a");
+    alink.setAttribute("href", `${user.blog}`);
+    new Text(user.blog).createText(alink);
+    div2.appendChild(alink);
+    bio.appendChild(div2);
+    document.createElement;
+
+    if (user.publicRepos > 0) {
+      createTimeline(user.nickname);
+      // getUserEvents(user.nickname);
+    }
+  }
+}
+
+function fade(element) {
+  var op = 1; // initial opacity
+  var timer = setInterval(function() {
+    if (op <= 0.1) {
+      clearInterval(timer);
+      element.style.display = "none";
+    }
+    element.style.opacity = op;
+    element.style.filter = "alpha(opacity=" + op * 100 + ")";
+    op -= op * 0.1;
+  }, 50);
+}
+
+function unfade(element) {
+  var op = 0.1; // initial opacity
+  element.style.display = "block";
+  var timer = setInterval(function() {
+    if (op >= 1) {
+      clearInterval(timer);
+    }
+    element.style.opacity = op;
+    element.style.filter = "alpha(opacity=" + op * 100 + ")";
+    op += op * 0.1;
+  }, 10);
+}
+
+function clearError() {
+  const divErrorContainer = document.getElementById("containerOfError");
+  fade(divErrorContainer);
 }
 
 function btnClicked() {
@@ -296,7 +341,7 @@ function btnClicked() {
 }
 
 function searchUser(username) {
-  let request = new XMLHttpRequest();
+  request = new XMLHttpRequest();
   request.onload = userInfoToHtml;
   request.open("get", `https://api.github.com/users/${username}`, true);
   request.send();

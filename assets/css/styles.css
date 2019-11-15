@@ -36,6 +36,26 @@ footer a:active {
   color: white;
 }
 
+.error {
+  border: solid rgb(244, 67, 54, 0.3) 2px;
+  border-radius: 5px;
+  padding: 20px;
+  background-color: rgb(244, 67, 54, 0.84); /* Red */
+  color: white;
+  margin-bottom: 10px;
+  /* animation: 1s fadeIn;
+  animation-fill-mode: forwards; */
+}
+
+/* @keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    visibility: visible;
+    opacity: 1;
+  }
+} */
 /* added css for timeline */
 body {
   margin: 0;
