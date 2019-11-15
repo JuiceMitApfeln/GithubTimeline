@@ -340,9 +340,9 @@ function clearError() {
 
 function btnClicked() {
   username = document.getElementById("usernameInput").value;
+  reposList = [];
   if (username != "") {
     searchUser(username);
-  } else {
   }
 }
 
@@ -518,7 +518,6 @@ function reposTimelineToHtml() {
       divDesc.appendChild(textDesc);
     }
   }
-  reposList = [];
 }
 
 init = () => {};
