@@ -231,7 +231,7 @@ function empty(obj) {
 }
 
 function userInfoToHtml() {
-  if (request.status == 404) {
+  if (requestSearchUser.status == 404) {
     const divErrorContainer = document.getElementById("containerOfError");
     divErrorContainer.innerHTML = "";
     unfade(divErrorContainer);
@@ -243,7 +243,7 @@ function userInfoToHtml() {
     divError.appendChild(document.createTextNode("User does not exist"));
     window.setTimeout(clearError, 2000);
   }
-  if (request.status != 404) {
+  if (requestSearchUser.status != 404) {
     let userObj = JSON.parse(this.responseText);
 
     const user = new User(
@@ -341,10 +341,14 @@ function btnClicked() {
 }
 
 function searchUser(username) {
-  request = new XMLHttpRequest();
-  request.onload = userInfoToHtml;
-  request.open("get", `https://api.github.com/users/${username}`, true);
-  request.send();
+  requestSearchUser = new XMLHttpRequest();
+  requestSearchUser.onload = userInfoToHtml;
+  requestSearchUser.open(
+    "get",
+    `https://api.github.com/users/${username}`,
+    true
+  );
+  requestSearchUser.send();
 }
 
 // var iets;
@@ -360,9 +364,31 @@ function searchUser(username) {
 //   userEvents.send();
 //   // iets = JSON.parse(userEvents.responseText);
 // }
+function formatDate(date) {
+  var monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  var day = date.getDate();
+  var monthIndex = date.getMonth();
+  var year = date.getFullYear();
+
+  return day + " " + monthNames[monthIndex] + " " + year;
+}
 
 function createTimeline(username) {
-  let request = new XMLHttpRequest();
+  request = new XMLHttpRequest();
   request.onload = reposTimelineToHtml;
   request.open("get", `https://api.github.com/users/${username}/repos`, true);
   request.send();
@@ -370,14 +396,17 @@ function createTimeline(username) {
 
 function reposTimelineToHtml() {
   let reposObj = JSON.parse(this.responseText);
-  console.dir(reposObj);
+  reposObj.sort(function(a, b) {
+    a = new Date(a.created_at);
+    b = new Date(b.created_at);
+    return a > b ? -1 : a < b ? 1 : 0;
+  });
 
   const timeline = document.getElementById("timeline");
-  console.log(timeline);
 
   timeline.innerHTML = "";
-  leftRight = ["l", "r"];
-  for (let i = 0; i < 2; i++) {
+  leftRight = ["r", "l"];
+  for (let i = 0; i < reposObj.length; i++) {
     const liElem = document.createElement("li");
     timeline.appendChild(liElem);
 
@@ -392,7 +421,8 @@ function reposTimelineToHtml() {
 
     const spanFlag = document.createElement("span");
     spanFlag.setAttribute("class", "flag");
-    const textspanFlag = document.createTextNode("name repo");
+    const name = reposObj[i].full_name.split("/")[1];
+    const textspanFlag = document.createTextNode(`${name}`);
     spanFlag.appendChild(textspanFlag);
     divFlagWrapper.appendChild(spanFlag);
 
@@ -404,7 +434,10 @@ function reposTimelineToHtml() {
     spanTime.setAttribute("class", "time");
     spanTimeWrapper.appendChild(spanTime);
 
-    const textSpanTimeWrapper = document.createTextNode("dateFrom - dateTo");
+    const timeFrom = new Date(reposObj[i].created_at);
+    const textSpanTimeWrapper = document.createTextNode(
+      `${formatDate(timeFrom)}`
+    ); // - dateTo
     spanTime.appendChild(textSpanTimeWrapper);
 
     // //second part
