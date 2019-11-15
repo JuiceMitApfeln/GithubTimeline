@@ -289,7 +289,7 @@ function userInfoToHtml() {
     timeline.innerHTML = "";
     if (user.publicRepos > 0) {
       getReposThanCreateTimeline(user.nickname);
-      // getUserEvents(user.nickname);
+      // getUserEvents(user.nickname, page);
     }
   }
 }
@@ -357,19 +357,20 @@ function searchUser(username) {
   requestSearchUser.send();
 }
 
-// var iets;
-// function getUserEvents(username) {
-//   let userEvents;
-//   userEvents = new XMLHttpRequest();
-//   // userEvents.onload;
-//   userEvents.open(
-//     "get",
-//     `https://api.github.com/users/${username}/events`,
-//     true
-//   );
-//   userEvents.send();
-//   // iets = JSON.parse(userEvents.responseText);
-// }
+/* HEEEEREEEEE */
+function getUserEvents(username, pageNr) {
+  requestEventsUser = new XMLHttpRequest();
+  requestEventsUser.onload = eventsToHtml;
+  requestEventsUser.open(
+    "get",
+    `https://api.github.com/users/${username}/events?page=${pageNr}&per_page=100`,
+    true
+  );
+  requestEventsUser.send();
+}
+
+function eventsToHtml() {}
+
 function formatDate(date) {
   var monthNames = [
     "January",
@@ -404,14 +405,13 @@ function getReposThanCreateTimeline(username) {
   requestRepos.send();
 }
 
-function getContributors(repoLink) {
-  requestContributors = new XMLHttpRequest();
-  requestContributors.onload;
-  requestContributors.open("get", `${repoLink}`, true);
-  requestContributors.send();
-  // console.log(requestContributors.responseText);
-  return JSON.parse(requestContributors.responseText);
-}
+// function getContributors(repoLink) {
+//   requestContributors = new XMLHttpRequest();
+//   requestContributors.onload;
+//   requestContributors.open("get", `${repoLink}`, true);
+//   requestContributors.send();
+//   return JSON.parse(requestContributors.responseText);
+// }
 
 var pageNrRem = 2;
 function getReposThanCreateTimelineMoreThan100Repos(username, pageNr) {
@@ -426,27 +426,31 @@ function getReposThanCreateTimelineMoreThan100Repos(username, pageNr) {
 }
 
 function displayErrorMsg(msg, fadeInAndOut = false) {
-  console.log(fadeInAndOut);
-  const divErrorContainer = document.getElementById("containerOfError");
-  divErrorContainer.innerHTML = "";
-  if (fadeInAndOut) {
-    unfade(divErrorContainer);
+  var invoked;
+  if (!invoked) {
+    invoked = true;
+    const divErrorContainer = document.getElementById("containerOfError");
+    divErrorContainer.innerHTML = "";
+    if (fadeInAndOut) {
+      unfade(divErrorContainer);
+    }
+    const divError = document.createElement("div");
+    divError.setAttribute("class", "error");
+    divErrorContainer.appendChild(divError);
+
+    divError.appendChild(document.createTextNode(`${msg}`));
+
+    window.setTimeout(clearError, 3000);
+    invoked = false;
   }
-  const divError = document.createElement("div");
-  divError.setAttribute("class", "error");
-  divErrorContainer.appendChild(divError);
-
-  divError.appendChild(document.createTextNode(`${msg}`));
-
-  window.setTimeout(clearError, 3000);
 }
 
 let reposList = [];
 function reposTimelineToHtml() {
   let reposObj = JSON.parse(this.responseText);
   if (reposObj.length >= 100) {
-    //error
     displayErrorMsg("This might take a few seconds");
+
     reposList.push(...reposObj);
     getReposThanCreateTimelineMoreThan100Repos(
       reposObj[0].owner.login,
@@ -480,8 +484,7 @@ function reposTimelineToHtml() {
 
       const spanFlag = document.createElement("span");
       spanFlag.setAttribute("class", "flag");
-      const name = reposObj[i].full_name.split("/")[1];
-      const textspanFlag = document.createTextNode(`${name}`);
+      const textspanFlag = document.createTextNode(`${reposObj[i].name}`);
       spanFlag.appendChild(textspanFlag);
       divFlagWrapper.appendChild(spanFlag);
 
