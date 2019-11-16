@@ -230,68 +230,64 @@ function empty(obj) {
   return true;
 }
 
-function userInfoToHtml() {
-  if (requestSearchUser.status == 404) {
-    displayErrorMsg("User does not exist", true);
+function userInfoToHtml(userObj) {
+  const user = new User(
+    userObj.name,
+    userObj.login,
+    userObj.bio,
+    userObj.email,
+    userObj.location,
+    userObj.blog,
+    userObj.hireable,
+    userObj.avatar_url,
+    userObj.public_repos,
+    userObj.html_url,
+    userObj.company
+  );
+
+  document.getElementById("username").innerHTML = user.name;
+  document.getElementById("avatar").setAttribute("src", user.avatar);
+  document.getElementById("nickname").innerHTML = user.nickname;
+
+  // for bio
+  const bio = document.getElementById("bio");
+  bio.innerHTML = "";
+  new Elem("p", user.bio).createElem(bio);
+  const div1 = document.createElement("div");
+  new Elem("img", "", "", [
+    "./assets/images/location.svg",
+    "location icon",
+    32
+  ]).createElem(div1);
+  new Text(` `).createText(div1);
+  new Text(`${user.location}\n`).createText(div1);
+  bio.appendChild(div1);
+
+  bio.appendChild(document.createElement("br"));
+
+  const div2 = document.createElement("div");
+  new Elem("img", "", "", [
+    "./assets/images/link.svg",
+    "hyperlink icon",
+    32
+  ]).createElem(div2);
+  new Text(` `).createText(div2);
+  const alink = document.createElement("a");
+  alink.setAttribute("href", `${user.blog}`);
+  new Text(formatLink(user.blog)).createText(alink);
+  div2.appendChild(alink);
+  bio.appendChild(div2);
+  document.createElement;
+
+  const timeline = document.getElementById("timeline");
+  timeline.innerHTML = "";
+  if (user.publicRepos > 0) {
+    getReposThanCreateTimeline(user.nickname).then(repos => {
+      reposTimelineToHtml(repos);
+    });
+    // getUserEvents(user.nickname, page);
   }
-  if (requestSearchUser.status != 404) {
-    let userObj = JSON.parse(this.responseText);
-
-    const user = new User(
-      userObj.name,
-      userObj.login,
-      userObj.bio,
-      userObj.email,
-      userObj.location,
-      userObj.blog,
-      userObj.hireable,
-      userObj.avatar_url,
-      userObj.public_repos,
-      userObj.html_url,
-      userObj.company
-    );
-
-    document.getElementById("username").innerHTML = user.name;
-    document.getElementById("avatar").setAttribute("src", user.avatar);
-    document.getElementById("nickname").innerHTML = user.nickname;
-
-    // for bio
-    const bio = document.getElementById("bio");
-    bio.innerHTML = "";
-    new Elem("p", user.bio).createElem(bio);
-    const div1 = document.createElement("div");
-    new Elem("img", "", "", [
-      "./assets/images/location.svg",
-      "location icon",
-      32
-    ]).createElem(div1);
-    new Text(` `).createText(div1);
-    new Text(`${user.location}\n`).createText(div1);
-    bio.appendChild(div1);
-
-    bio.appendChild(document.createElement("br"));
-
-    const div2 = document.createElement("div");
-    new Elem("img", "", "", [
-      "./assets/images/link.svg",
-      "hyperlink icon",
-      32
-    ]).createElem(div2);
-    new Text(` `).createText(div2);
-    const alink = document.createElement("a");
-    alink.setAttribute("href", `${user.blog}`);
-    new Text(formatLink(user.blog)).createText(alink);
-    div2.appendChild(alink);
-    bio.appendChild(div2);
-    document.createElement;
-
-    const timeline = document.getElementById("timeline");
-    timeline.innerHTML = "";
-    if (user.publicRepos > 0) {
-      getReposThanCreateTimeline(user.nickname);
-      // getUserEvents(user.nickname, page);
-    }
-  }
+  // }
 }
 
 function formatLink(link) {
@@ -342,34 +338,46 @@ function btnClicked() {
   username = document.getElementById("usernameInput").value;
   reposList = [];
   if (username != "") {
-    searchUser(username);
+    searchUser(username)
+      .then(user => {
+        userInfoToHtml(user);
+      })
+      .catch(e => displayErrorMsg(`${e.message}`, true));
   }
 }
 
-function searchUser(username) {
-  requestSearchUser = new XMLHttpRequest();
-  requestSearchUser.onload = userInfoToHtml;
-  requestSearchUser.open(
-    "get",
-    `https://api.github.com/users/${username}`,
-    true
-  );
-  requestSearchUser.send();
+async function searchUser(username) {
+  let response = await fetch(`https://api.github.com/users/${username}`);
+  if (response.ok) {
+    let data = await response.json();
+    return data;
+  } else {
+    throw new Error(`User doesn't exist.`);
+  }
 }
 
-/* HEEEEREEEEE */
-function getUserEvents(username, pageNr) {
-  requestEventsUser = new XMLHttpRequest();
-  requestEventsUser.onload = eventsToHtml;
-  requestEventsUser.open(
-    "get",
-    `https://api.github.com/users/${username}/events?page=${pageNr}&per_page=100`,
-    true
+async function getUserEvents(username, pageNr) {
+  // not yet implemented
+  let response = await fetch(
+    `https://api.github.com/users/${username}/events?page=${pageNr}&per_page=100`
   );
-  requestEventsUser.send();
+  if (response.ok) {
+    let data = await response.json();
+    return data;
+  } else {
+    throw new Error(`User has no events.`);
+  }
 }
 
-function eventsToHtml() {}
+async function getContributorsOfRepo(link) {
+  let response = await fetch(`${link}`);
+  if (response.ok) {
+    let data = await response.json();
+    return data;
+  } else {
+    throw new Error(`No contributors found`);
+  }
+}
 
 function formatDate(date) {
   var monthNames = [
@@ -394,35 +402,28 @@ function formatDate(date) {
   return day + " " + monthNames[monthIndex] + " " + year;
 }
 
-function getReposThanCreateTimeline(username) {
-  requestRepos = new XMLHttpRequest();
-  requestRepos.onload = reposTimelineToHtml;
-  requestRepos.open(
-    "get",
-    `https://api.github.com/users/${username}/repos?page=1&per_page=100`,
-    true
+async function getReposThanCreateTimeline(username) {
+  let response = await fetch(
+    `https://api.github.com/users/${username}/repos?page=1&per_page=100`
   );
-  requestRepos.send();
+  if (response.ok) {
+    let data = await response.json();
+    return data;
+  } else {
+    throw new Error(`User has no repositories.`);
+  }
 }
 
-// function getContributors(repoLink) {
-//   requestContributors = new XMLHttpRequest();
-//   requestContributors.onload;
-//   requestContributors.open("get", `${repoLink}`, true);
-//   requestContributors.send();
-//   return JSON.parse(requestContributors.responseText);
-// }
-
-var pageNrRem = 2;
-function getReposThanCreateTimelineMoreThan100Repos(username, pageNr) {
-  req = new XMLHttpRequest();
-  req.onload = reposTimelineToHtml;
-  req.open(
-    "get",
-    `https://api.github.com/users/${username}/repos?page=${pageNr}&per_page=100`,
-    true
+async function getReposThanCreateTimelineMoreThan100Repos(username, pageNr) {
+  let response = await fetch(
+    `https://api.github.com/users/${username}/repos?page=${pageNr}&per_page=100`
   );
-  req.send();
+  if (response.ok) {
+    let data = await response.json();
+    return data;
+  } else {
+    throw new Error(`User has no repositories.`);
+  }
 }
 
 function displayErrorMsg(msg, fadeInAndOut = false) {
@@ -446,8 +447,8 @@ function displayErrorMsg(msg, fadeInAndOut = false) {
 }
 
 let reposList = [];
-function reposTimelineToHtml() {
-  let reposObj = JSON.parse(this.responseText);
+pageNrRem = 2;
+function reposTimelineToHtml(reposObj) {
   if (reposObj.length >= 100) {
     displayErrorMsg("This might take a few seconds");
 
@@ -496,15 +497,15 @@ function reposTimelineToHtml() {
       spanTime.setAttribute("class", "time");
       spanTimeWrapper.appendChild(spanTime);
 
-      const timeFrom = new Date(reposObj[i].created_at);
       const textSpanTimeWrapper = document.createTextNode(
-        `${formatDate(timeFrom)}`
+        `${formatDate(new Date(reposObj[i].created_at))}`
       ); // - dateTo
       spanTime.appendChild(textSpanTimeWrapper);
 
       // //second part
       const divDesc = document.createElement("div");
       divDesc.setAttribute("class", "desc");
+      divDesc.setAttribute("id", `desc${i}`);
       divDir.appendChild(divDesc);
 
       const linkToRepo = document.createElement("a");
@@ -515,12 +516,36 @@ function reposTimelineToHtml() {
       linkToRepo.append(textLink);
       divDesc.append(linkToRepo);
 
-      // const lul = getContributors(reposObj[i].contributors_url);
-      // console.log(lul);
-      const textDesc = document.createTextNode(``);
+      divDesc.appendChild(document.createElement("br"));
+      const textDesc = document.createTextNode(
+        `last update on: ${formatDate(new Date(reposObj[i].updated_at))}`
+      );
+      getContributorsOfRepo(reposObj[i].contributors_url).then(contributors => {
+        contributorsToHtml(contributors, reposObj[i].owner.login, i);
+      });
       divDesc.appendChild(textDesc);
     }
   }
+}
+let totalContributionForUser = 0;
+function contributorsToHtml(contributors, username, i) {
+  const desc = document.getElementById(`desc${i}`);
+  desc.appendChild(document.createElement("br"));
+  let totalContributionRepository = 0;
+  contributors.forEach(contributor => {
+    totalContributionRepository += contributor.contributions;
+    if (contributor.login == username) {
+      totalContributionForUser += contributor.contributions;
+      desc.appendChild(
+        document.createTextNode(
+          `Contributions by ${username}: ${contributor.contributions}`
+        )
+      );
+    }
+  });
+  desc.appendChild(
+    document.createTextNode(` of ${totalContributionRepository}`)
+  );
 }
 
 init = () => {};
@@ -537,6 +562,13 @@ function enterPress(event) {
 
 window.onload = function() {
   init();
-  this.searchUser("reeveng");
-  var user;
+  const u = searchUser("reeveng")
+    .then(user => {
+      console.log(user);
+      userInfoToHtml(user);
+    })
+    .catch(e => {
+      displayErrorMsg(`User ${e.message}`, true);
+      console.log(e);
+    });
 };

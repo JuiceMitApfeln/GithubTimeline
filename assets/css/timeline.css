@@ -207,10 +207,11 @@ body {
 
 .desc {
   margin: 1em 0.75em 0 0;
-
   font-size: 0.77777em;
   font-style: italic;
   line-height: 1.5em;
+  padding: 1em;
+  background: rgb(245, 245, 245);
 }
 
 .direction-r .desc {
@@ -293,6 +294,8 @@ body {
   }
 
   .desc {
+    border: solid #505050 2px;
+    border-radius: 10px;
     position: relative;
     margin: 1em 0 0 0;
     padding: 1em;
