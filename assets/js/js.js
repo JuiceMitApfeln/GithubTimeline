@@ -456,7 +456,7 @@ function reposTimelineToHtml(reposObj) {
     getReposThanCreateTimelineMoreThan100Repos(
       reposObj[0].owner.login,
       pageNrRem
-    );
+    ).then(repos => reposTimelineToHtml(repos));
     pageNrRem++;
   } else {
     reposObj.push(...reposList);
@@ -520,9 +520,22 @@ function reposTimelineToHtml(reposObj) {
       const textDesc = document.createTextNode(
         `last update on: ${formatDate(new Date(reposObj[i].updated_at))}`
       );
-      getContributorsOfRepo(reposObj[i].contributors_url).then(contributors => {
-        contributorsToHtml(contributors, reposObj[i].owner.login, i);
-      });
+      // if (reposObj.length < 100) {
+      getContributorsOfRepo(reposObj[i].contributors_url)
+        .then(contributors => {
+          contributorsToHtml(contributors, reposObj[i].owner.login, i);
+        })
+        .catch(function noContributors() {
+          divDesc.appendChild(document.createElement("br"));
+          divDesc.appendChild(
+            document.createTextNode(`No contributions available.`)
+          );
+        });
+      // } else {
+      //   displayErrorMsg(
+      //     "Only a part of the information will be provided due to the considerable amount of repositories."
+      //   );
+      // }
       divDesc.appendChild(textDesc);
     }
   }
