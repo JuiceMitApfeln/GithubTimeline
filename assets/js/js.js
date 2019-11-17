@@ -220,10 +220,10 @@ class Repo {
 }
 
 function empty(obj) {
-  if (obj == null) {
+  if (obj == undefined) {
     return false;
   }
-  if (obj == undefined) {
+  if (obj == null) {
     return false;
   }
   if (typeof obj == "string") return obj.trim() != "";
@@ -426,8 +426,8 @@ async function getReposThanCreateTimelineMoreThan100Repos(username, pageNr) {
   }
 }
 
+var invoked;
 function displayErrorMsg(msg, fadeInAndOut = false) {
-  var invoked;
   if (!invoked) {
     invoked = true;
     const divErrorContainer = document.getElementById("containerOfError");
@@ -575,7 +575,7 @@ function enterPress(event) {
 
 window.onload = function() {
   init();
-  const u = searchUser("reeveng")
+  searchUser("reeveng")
     .then(user => {
       console.log(user);
       userInfoToHtml(user);
