@@ -223,9 +223,6 @@ function empty(obj) {
   if (obj == undefined) {
     return false;
   }
-  if (obj == null) {
-    return false;
-  }
   if (typeof obj == "string") return obj.trim() != "";
   return true;
 }
