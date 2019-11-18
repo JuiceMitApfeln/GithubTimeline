@@ -574,11 +574,9 @@ window.onload = function() {
   init();
   searchUser("reeveng")
     .then(user => {
-      console.log(user);
       userInfoToHtml(user);
     })
     .catch(e => {
       displayErrorMsg(`User ${e.message}`, true);
-      console.log(e);
     });
 };
