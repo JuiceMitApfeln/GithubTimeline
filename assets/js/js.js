@@ -215,10 +215,6 @@ class Text {
   }
 }
 
-class Repo {
-  constructor(_name, _cloneUrl, _createdAtDate, _owner) {}
-}
-
 function empty(obj) {
   if (obj == undefined) {
     return false;
@@ -344,7 +340,14 @@ function btnClicked() {
 }
 
 async function searchUser(username) {
-  let response = await fetch(`https://api.github.com/users/${username}`);
+  // HERE DOING AUTHENTICATION
+  console.log(window.location.href);
+  const code = window.location.href.split("?code=")[1];
+  console.log(code);
+  let response = await fetch(`https://api.github.com/users/${username}`, {
+    method: "GET",
+    Authorization: `token ${code}`
+  });
   if (response.ok) {
     let data = await response.json();
     return data;
@@ -538,6 +541,7 @@ function reposTimelineToHtml(reposObj) {
   }
 }
 let totalContributionForUser = 0;
+
 function contributorsToHtml(contributors, username, i) {
   const desc = document.getElementById(`desc${i}`);
   desc.appendChild(document.createElement("br"));
@@ -558,7 +562,15 @@ function contributorsToHtml(contributors, username, i) {
   );
 }
 
-init = () => {};
+init = () => {
+  searchUser("reeveng")
+    .then(user => {
+      userInfoToHtml(user);
+    })
+    .catch(e => {
+      displayErrorMsg(`User ${e.message}`, true);
+    });
+};
 
 document.getElementById("btnSearch").addEventListener("click", btnClicked);
 document
@@ -570,13 +582,4 @@ function enterPress(event) {
   }
 }
 
-window.onload = function() {
-  init();
-  searchUser("reeveng")
-    .then(user => {
-      userInfoToHtml(user);
-    })
-    .catch(e => {
-      displayErrorMsg(`User ${e.message}`, true);
-    });
-};
+window.onload = init;
